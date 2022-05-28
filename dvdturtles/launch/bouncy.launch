@@ -1,0 +1,4 @@
+<launch>
+  <node name="turtles" pkg="turtlesim" type="turtlesim_node" output="screen"/>
+  <node name="bouncy" pkg="dvdturtles" type="bouncy.py" output="screen"/>
+</launch>
