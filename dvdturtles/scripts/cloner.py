@@ -28,18 +28,17 @@ class Ears:
 class Turtle:
     def __init__(self, vx=0.8, vy=0.6, x=0, y=0, exists=False):
         global summoner
-        global count
+        if not exists:
+            rospy.wait_for_service('/spawn')
+            summoner(x, y, 0, f"turtle{count}")
         self.vx = vx
         self.vy = vy
         self.pub = rospy.Publisher(f'/turtle{count}/cmd_vel', Twist, queue_size=10)
         self.vel = Twist()
         self.myears = Ears(x, y)
-
         rospy.Subscriber(f'/turtle{count}/pose', Pose, self.myears.pose_callback)
-        if not exists and count<16:
-            count += 1
-            rospy.wait_for_service('/spawn')
-            summoner(x, y, 0, f"turtle{count}")
+        self.updatevelocity()
+
 
 
     def updatevelocity(self):
@@ -71,7 +70,10 @@ class Turtle:
 
 def summon(vx, vy, x, y):
     global turtles
-    turtles.append(Turtle(vx, vy, x, y))
+    global count
+    if count<16:
+        count+=1
+        turtles.append(Turtle(vx, vy, x, y))
 
 
 if __name__ == '__main__':
