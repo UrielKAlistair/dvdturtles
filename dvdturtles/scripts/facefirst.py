@@ -24,6 +24,7 @@ class Turtle:
         self.vel = Twist()
 
         rospy.Subscriber(f'/turtle{count}/pose', Pose, self.pose_callback)
+        self.rotate(theta)
         self.updatevelocity()
 
     def pose_callback(self, pose):
@@ -51,12 +52,42 @@ class Turtle:
 
         self.pub.publish(self.vel)
 
+    def rotate(self, angle):
+        theta_initital = self.theta
+
+        while deltatheta(theta_initital, self.theta) < angle:
+
+            self.vel.linear.y = 0
+            self.vel.linear.z = 0
+            self.vel.linear.x = 0
+
+            self.vel.angular.x = 0
+            self.vel.angular.y = 0
+            self.vel.angular.z = 1
+
+            self.pub.publish(self.vel)
+
+
 def summon(vx, vy, x, y):
     global turtles
     global count
     if count < 16:
         count += 1
         turtles.append(Turtle(vx, vy, x, y))
+
+
+def deltatheta(theta1, theta2):
+
+    if theta2 < 0:
+        theta2 += 2 * math.pi
+    if theta1 < 0:
+        theta1 += 2 * math.pi
+
+    if theta2 < theta1:
+        theta2 += 2 * math.pi
+
+    return theta2 - theta1
+
 
 if __name__ == '__main__':
 
