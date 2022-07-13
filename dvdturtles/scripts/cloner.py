@@ -1,24 +1,23 @@
 #!/usr/bin/env python3
-import math
 
 import rospy
 from geometry_msgs.msg import Twist
 from turtlesim.msg import Pose
 from turtlesim.srv import Spawn
 
+
 class Turtle:
 
-    def __init__(self, vx=0.8, theta=0, x=0, y=0, exists=False):
+    def __init__(self, vx=1, vy=1.1, x=0, y=0, exists=False):
         global summoner
         if not exists:
             rospy.wait_for_service('/spawn')
             summoner(x, y, 0, f"turtle{count}")
         self.x = x
         self.y = y
-        self.theta = theta
 
         self.vx = vx
-        self.vy = 0
+        self.vy = vy
 
         self.pub = rospy.Publisher(f'/turtle{count}/cmd_vel', Twist, queue_size=10)
         self.vel = Twist()
@@ -29,21 +28,28 @@ class Turtle:
     def pose_callback(self, pose):
         self.x = pose.x
         self.y = pose.y
-        self.theta = pose.theta
 
     def updatevelocity(self):
 
-        if self.y > 8 or self.y < 3:
-            summon(self.vx,  math.pi + self.theta, self.x, self.y)
-            self.rotate(math.pi)
+        if self.y > 10 and self.vy > 0:
+            summon(-self.vx, -self.vy, self.x, self.y)
+            self.vy = -self.vy
 
-        elif self.x > 8 or self.x < 3:
-            summon(self.vx, math.pi + self.theta, self.x, self.y)
-            self.rotate(math.pi)
+        elif self.y < 1 and self.vy < 0:
+            summon(-self.vx, -self.vy, self.x, self.y)
+            self.vy = -self.vy
 
-        self.vel.linear.y = self.vx
+        elif self.x > 10 and self.vx > 0:
+            summon(-self.vx, -self.vy, self.x, self.y)
+            self.vx = -self.vx
+
+        elif self.x < 1 and self.vx < 0:
+            summon(-self.vx, -self.vy, self.x, self.y)
+            self.vx = -self.vx
+
+        self.vel.linear.x = self.vx
+        self.vel.linear.y = self.vy
         self.vel.linear.z = 0
-        self.vel.linear.x = 0
 
         self.vel.angular.x = 0
         self.vel.angular.y = 0
@@ -51,12 +57,14 @@ class Turtle:
 
         self.pub.publish(self.vel)
 
+
 def summon(vx, vy, x, y):
     global turtles
     global count
     if count < 16:
         count += 1
         turtles.append(Turtle(vx, vy, x, y))
+
 
 if __name__ == '__main__':
 
